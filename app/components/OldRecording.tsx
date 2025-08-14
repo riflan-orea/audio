@@ -45,22 +45,33 @@ const OldRecording: React.FC<OldRecordingProps> = ({
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !audioContext) return;
+    if (!file) return;
 
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      
-      if (audioRef.current) {
-        const url = URL.createObjectURL(file);
-        audioRef.current.src = url;
-        setAudioUrl(url);
-        setDuration(audioBuffer.duration);
+      // Initialize audio context if not already done
+      if (!audioContext) {
+        initializeAudioContext();
       }
+      
+      // Wait a bit for the context to be ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+              if (audioRef.current) {
+          const url = URL.createObjectURL(file);
+          audioRef.current.src = url;
+          setAudioUrl(url);
+          console.log('Audio file loaded, URL set:', url);
+          
+          // Set duration when metadata is loaded
+          audioRef.current.onloadedmetadata = () => {
+            setDuration(audioRef.current?.duration || 0);
+            console.log('Audio metadata loaded, duration:', audioRef.current?.duration);
+          };
+        }
     } catch (error) {
       console.error('Error loading audio file:', error);
     }
-  }, [audioContext]);
+  }, [audioContext, initializeAudioContext]);
 
   const startRecording = useCallback(async () => {
     try {
@@ -223,9 +234,20 @@ const OldRecording: React.FC<OldRecordingProps> = ({
     }
   }, [audioContext]);
 
-  return (
+    return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-2xl mx-auto">
-      
+      {/* File Upload */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Audio Input
+        </label>
+        <input
+          type="file"
+          accept="audio/*"
+          onChange={handleFileUpload}
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        />
+      </div>
 
       {/* Recording Controls */}
       <div className="mb-6">
@@ -273,7 +295,7 @@ const OldRecording: React.FC<OldRecordingProps> = ({
                 : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
             }`}
           >
-            Play
+            {!audioUrl ? 'No Audio' : isPlaying ? 'Playing' : 'Play'}
           </button>
           <button
             onClick={pauseAudio}
