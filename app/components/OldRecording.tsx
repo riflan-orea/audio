@@ -82,10 +82,33 @@ const OldRecording: React.FC<OldRecordingProps> = ({
         
         if (audioRef.current) {
           audioRef.current.src = url;
-          // Set duration for recorded audio
-          audioRef.current.onloadedmetadata = () => {
-            setDuration(audioRef.current?.duration || 0);
+          
+          // Set duration for recorded audio with multiple fallbacks
+          const setDurationSafely = () => {
+            if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration) && isFinite(audioRef.current.duration)) {
+              setDuration(audioRef.current.duration);
+              console.log('Duration set from loadedmetadata:', audioRef.current.duration);
+            } else {
+              // Fallback: try to get duration after a short delay
+              setTimeout(() => {
+                if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration) && isFinite(audioRef.current.duration)) {
+                  setDuration(audioRef.current.duration);
+                  console.log('Duration set from timeout fallback:', audioRef.current.duration);
+                } else {
+                  console.warn('Could not determine audio duration, setting to 0');
+                  setDuration(0);
+                }
+              }, 100);
+            }
           };
+          
+          audioRef.current.onloadedmetadata = setDurationSafely;
+          
+          // Also try to set duration immediately if available
+          if (audioRef.current.duration && !isNaN(audioRef.current.duration) && isFinite(audioRef.current.duration)) {
+            setDuration(audioRef.current.duration);
+            console.log('Duration set immediately:', audioRef.current.duration);
+          }
         }
         
         console.log('Recording completed, blob size:', blob.size);
@@ -160,8 +183,11 @@ const OldRecording: React.FC<OldRecordingProps> = ({
   }, []);
 
   const handleLoadedMetadata = useCallback(() => {
-    if (audioRef.current) {
+    if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration) && isFinite(audioRef.current.duration)) {
       setDuration(audioRef.current.duration);
+      console.log('Duration loaded from metadata:', audioRef.current.duration);
+    } else {
+      console.warn('Invalid duration in loadedmetadata event, duration:', audioRef.current?.duration);
     }
   }, []);
 
@@ -174,6 +200,9 @@ const OldRecording: React.FC<OldRecordingProps> = ({
   }, []);
 
   const formatTime = (time: number) => {
+    if (isNaN(time) || time === 0 || !isFinite(time)) {
+      return '0:00';
+    }
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
