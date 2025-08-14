@@ -14,18 +14,14 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   onIsPlayingChange
 }) => {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioSource, setAudioSource] = useState<MediaElementAudioSourceNode | null>(null);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
 
   const initializeAudioContext = useCallback(() => {
@@ -45,94 +41,33 @@ const AudioControls: React.FC<AudioControlsProps> = ({
 
   const handleFileUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !audioContext) return;
+    if (!file) return;
 
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      // Initialize audio context if not already done
+      if (!audioContext) {
+        initializeAudioContext();
+      }
+      
+      // Wait a bit for the context to be ready
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       if (audioRef.current) {
         const url = URL.createObjectURL(file);
         audioRef.current.src = url;
         setAudioUrl(url);
-        setDuration(audioBuffer.duration);
+        console.log('Audio file loaded, URL set:', url);
+        
+        // Set duration when metadata is loaded
+        audioRef.current.onloadedmetadata = () => {
+          setDuration(audioRef.current?.duration || 0);
+          console.log('Audio metadata loaded, duration:', audioRef.current?.duration);
+        };
       }
     } catch (error) {
       console.error('Error loading audio file:', error);
     }
-  }, [audioContext]);
-
-  const startRecording = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
-        } 
-      });
-      streamRef.current = stream;
-      
-      // Get supported MIME types
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm') 
-        ? 'audio/webm' 
-        : MediaRecorder.isTypeSupported('audio/mp4') 
-        ? 'audio/mp4' 
-        : 'audio/wav';
-      
-      const recorder = new MediaRecorder(stream, { mimeType });
-      
-      // Store chunks in state to persist across events
-      const recordingChunks: Blob[] = [];
-      
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          recordingChunks.push(event.data);
-        }
-      };
-      
-      recorder.onstop = () => {
-        const blob = new Blob(recordingChunks, { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        setAudioUrl(url);
-        setRecordedChunks(recordingChunks);
-        
-        if (audioRef.current) {
-          audioRef.current.src = url;
-          // Set duration for recorded audio
-          audioRef.current.onloadedmetadata = () => {
-            setDuration(audioRef.current?.duration || 0);
-          };
-        }
-        
-        console.log('Recording stopped, blob size:', blob.size);
-      };
-      
-      recorder.onerror = (event) => {
-        console.error('MediaRecorder error:', event);
-        setIsRecording(false);
-      };
-      
-      setMediaRecorder(recorder);
-      recorder.start(1000); // Collect data every second
-      setIsRecording(true);
-      console.log('Recording started');
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      alert('Failed to start recording. Please check microphone permissions.');
-    }
-  }, []);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorder && isRecording) {
-      mediaRecorder.stop();
-      setIsRecording(false);
-      
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-    }
-  }, [mediaRecorder, isRecording]);
+  }, [audioContext, initializeAudioContext]);
 
   const playAudio = useCallback(() => {
     if (!audioRef.current) return;
@@ -238,39 +173,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
         />
       </div>
 
-      {/* Recording Controls */}
-      <div className="mb-6">
-        <div className="flex gap-2">
-          <button
-            onClick={startRecording}
-            disabled={isRecording}
-            className={`px-3 py-1.5 text-sm font-medium rounded border transition-colors ${
-              isRecording
-                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-            }`}
-          >
-            {isRecording ? 'Recording...' : 'Record'}
-          </button>
-          <button
-            onClick={stopRecording}
-            disabled={!isRecording}
-            className={`px-3 py-1.5 text-sm font-medium rounded border transition-colors ${
-              !isRecording
-                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-            }`}
-          >
-            Stop
-          </button>
-        </div>
-        {isRecording && (
-          <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            Recording...
-          </div>
-        )}
-      </div>
+
 
       {/* Playback Controls */}
       <div className="mb-4">
@@ -284,7 +187,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
                 : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
             }`}
           >
-            Play
+            {!audioUrl ? 'No Audio' : isPlaying ? 'Playing' : 'Play'}
           </button>
           <button
             onClick={pauseAudio}
