@@ -89,47 +89,47 @@ export default function AudioLabPage() {
         </div>
       )
     },
-    {
-      id: 'recording',
-      label: 'Recording',
-      content: (
-        <div className="space-y-8">
-          {/* New Recording with Live Visualization */}
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-medium text-gray-800 mb-2">Recording with Live Visualization</h3>
-              <p className="text-sm text-gray-500">Record audio while viewing real-time visualization</p>
-            </div>
+    // {
+    //   id: 'recording',
+    //   label: 'Recording',
+    //   content: (
+    //     <div className="space-y-8">
+    //       {/* New Recording with Live Visualization */}
+    //       <div className="space-y-6">
+    //         <div className="text-center mb-6">
+    //           <h3 className="text-lg font-medium text-gray-800 mb-2">Recording with Live Visualization</h3>
+    //           <p className="text-sm text-gray-500">Record audio while viewing real-time visualization</p>
+    //         </div>
             
-            <RecordingVisualizer
-              visualizationType={visualizationType}
-              width={800}
-              height={200}
-              barWidth={4}
-              barGap={2}
-              barColor="#3b82f6"
-              backgroundColor="#ffffff"
-              onRecordingComplete={handleRecordingComplete}
-            />
+    //         <RecordingVisualizer
+    //           visualizationType={visualizationType}
+    //           width={800}
+    //           height={200}
+    //           barWidth={4}
+    //           barGap={2}
+    //           barColor="#3b82f6"
+    //           backgroundColor="#ffffff"
+    //           onRecordingComplete={handleRecordingComplete}
+    //         />
             
-            {recordedAudioUrl && (
-              <div className="text-center">
-                <h4 className="text-md font-medium text-gray-800 mb-3">Recorded Audio</h4>
-                <audio
-                  controls
-                  className="mx-auto"
-                  src={recordedAudioUrl}
-                >
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
-            )}
-          </div>
+    //         {recordedAudioUrl && (
+    //           <div className="text-center">
+    //             <h4 className="text-md font-medium text-gray-800 mb-3">Recorded Audio</h4>
+    //             <audio
+    //               controls
+    //               className="mx-auto"
+    //               src={recordedAudioUrl}
+    //             >
+    //               Your browser does not support the audio element.
+    //             </audio>
+    //           </div>
+    //         )}
+    //       </div>
 
           
-        </div>
-      )
-    },
+    //     </div>
+    //   )
+    // },
     {
       id: 'text-audio',
       label: 'Text Audio',
@@ -154,12 +154,12 @@ export default function AudioLabPage() {
     },
     {
       id: 'old-record',
-      label: 'Old Record',
+      label: 'Recording',
       content: (
         <div className="space-y-8">
         <div className="text-center mb-6">
-          <h3 className="text-lg font-medium text-gray-800 mb-2">Old Recording Method</h3>
-          <p className="text-sm text-gray-500">Traditional recording with file upload and playback</p>
+          <h3 className="text-lg font-medium text-gray-800 mb-2">Recording Method</h3>
+          <p className="text-sm text-gray-500">Recording with file upload and playback</p>
         </div>
         
         <OldRecording
