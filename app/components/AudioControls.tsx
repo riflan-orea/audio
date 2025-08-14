@@ -224,82 +224,64 @@ const AudioControls: React.FC<AudioControlsProps> = ({
   }, [audioContext]);
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold text-white mb-6 text-center">
-        Audio Visualizer
-      </h2>
-      
+    <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-2xl mx-auto">
       {/* File Upload */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Upload Audio File
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Audio Input
         </label>
         <input
           type="file"
           accept="audio/*"
           onChange={handleFileUpload}
-          className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700"
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
         />
       </div>
 
       {/* Recording Controls */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Record Audio
-        </label>
         <div className="flex gap-2">
           <button
             onClick={startRecording}
             disabled={isRecording}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 py-1.5 text-sm font-medium rounded border transition-colors ${
               isRecording
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-red-600 text-white hover:bg-red-700'
+                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
             }`}
           >
-            {isRecording ? 'Recording...' : 'Start Recording'}
+            {isRecording ? 'Recording...' : 'Record'}
           </button>
           <button
             onClick={stopRecording}
             disabled={!isRecording}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 py-1.5 text-sm font-medium rounded border transition-colors ${
               !isRecording
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-gray-600 text-white hover:bg-gray-700'
+                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
             }`}
           >
-            Stop Recording
+            Stop
           </button>
         </div>
         {isRecording && (
-          <div className="mt-2 flex items-center gap-2 text-red-400">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="text-sm">Recording in progress...</span>
+          <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            Recording...
           </div>
         )}
-        {recordedChunks.length > 0 && !isRecording && (
-          <div className="mt-2 text-sm text-green-400">
-            ✓ Recording completed successfully ({recordedChunks.length} chunks)
-          </div>
-        )}
-        {/* Debug info */}
-        <div className="mt-2 text-xs text-gray-500">
-          <div>Audio URL: {audioUrl ? 'Set' : 'Not set'}</div>
-          <div>Recording: {isRecording ? 'Yes' : 'No'}</div>
-          <div>Chunks: {recordedChunks.length}</div>
-        </div>
       </div>
 
       {/* Playback Controls */}
-      <div className="mb-6">
-        <div className="flex gap-2 mb-4">
+      <div className="mb-4">
+        <div className="flex gap-2 mb-3">
           <button
             onClick={playAudio}
             disabled={!audioUrl || isPlaying}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 py-1.5 text-sm font-medium rounded border transition-colors ${
               !audioUrl || isPlaying
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700'
+                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
             }`}
           >
             Play
@@ -307,10 +289,10 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           <button
             onClick={pauseAudio}
             disabled={!isPlaying}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 py-1.5 text-sm font-medium rounded border transition-colors ${
               !isPlaying
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                : 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100'
             }`}
           >
             Pause
@@ -318,10 +300,10 @@ const AudioControls: React.FC<AudioControlsProps> = ({
           <button
             onClick={stopAudio}
             disabled={!audioUrl}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 py-1.5 text-sm font-medium rounded border transition-colors ${
               !audioUrl
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-red-600 text-white hover:bg-red-700'
+                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
             }`}
           >
             Stop
@@ -330,14 +312,14 @@ const AudioControls: React.FC<AudioControlsProps> = ({
 
         {/* Progress Bar */}
         {audioUrl && (
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-300 mb-1">
+          <div className="mb-3">
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-1">
               <div
-                className="bg-green-600 h-2 rounded-full transition-all duration-100"
+                className="bg-blue-500 h-1 rounded-full transition-all duration-100"
                 style={{ width: `${(currentTime / duration) * 100}%` }}
               />
             </div>
@@ -346,7 +328,7 @@ const AudioControls: React.FC<AudioControlsProps> = ({
 
         {/* Volume Control */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-300">Volume:</span>
+          <span className="text-xs text-gray-500">Volume:</span>
           <input
             type="range"
             min="0"
@@ -354,9 +336,9 @@ const AudioControls: React.FC<AudioControlsProps> = ({
             step="0.1"
             value={volume}
             onChange={handleVolumeChange}
-            className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+            className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
           />
-          <span className="text-sm text-gray-300 w-8">{Math.round(volume * 100)}%</span>
+          <span className="text-xs text-gray-500 w-6">{Math.round(volume * 100)}%</span>
         </div>
       </div>
 

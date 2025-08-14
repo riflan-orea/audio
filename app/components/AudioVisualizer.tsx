@@ -129,17 +129,14 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
   }, [analyser]);
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center">
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
-        className="border border-gray-600 rounded-lg shadow-lg"
+        className="border border-gray-200 rounded"
         style={{ maxWidth: '100%', height: 'auto' }}
       />
-      <div className="text-sm text-gray-400">
-        {visualizationType === 'waveform' ? 'Waveform' : 'Spectrum Analyzer'}
-      </div>
     </div>
   );
 };
