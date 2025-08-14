@@ -7,6 +7,7 @@ import AudioVisualizer from '../components/AudioVisualizer';
 import LiveAudioVisualizer from '../components/LiveAudioVisualizer';
 import RecordingVisualizer from '../components/RecordingVisualizer';
 import TextAudioVisualizer from '../components/TextAudioVisualizer';
+import OldRecording from '../components/OldRecording';
 
 export default function AudioLabPage() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -14,6 +15,16 @@ export default function AudioLabPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [visualizationType, setVisualizationType] = useState<'waveform' | 'spectrum'>('spectrum');
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
+  
+  // State for old record tab
+  const [oldRecordAudioContext, setOldRecordAudioContext] = useState<AudioContext | null>(null);
+  const [oldRecordAnalyser, setOldRecordAnalyser] = useState<AnalyserNode | null>(null);
+  const [oldRecordIsPlaying, setOldRecordIsPlaying] = useState(false);
+  
+  // State for old recording in recording tab
+  const [recordingTabAudioContext, setRecordingTabAudioContext] = useState<AudioContext | null>(null);
+  const [recordingTabAnalyser, setRecordingTabAnalyser] = useState<AnalyserNode | null>(null);
+  const [recordingTabIsPlaying, setRecordingTabIsPlaying] = useState(false);
 
   const handleRecordingComplete = React.useCallback((audioUrl: string, blob: Blob) => {
     setRecordedAudioUrl(audioUrl);
@@ -82,35 +93,40 @@ export default function AudioLabPage() {
       id: 'recording',
       label: 'Recording',
       content: (
-        <div className="space-y-6">
-          <div className="text-center mb-6">
-            <h3 className="text-lg font-medium text-gray-800 mb-2">Recording with Live Visualization</h3>
-            <p className="text-sm text-gray-500">Record audio while viewing real-time visualization</p>
-          </div>
-          
-          <RecordingVisualizer
-            visualizationType={visualizationType}
-            width={800}
-            height={200}
-            barWidth={4}
-            barGap={2}
-            barColor="#3b82f6"
-            backgroundColor="#ffffff"
-            onRecordingComplete={handleRecordingComplete}
-          />
-          
-          {recordedAudioUrl && (
-            <div className="text-center">
-              <h4 className="text-md font-medium text-gray-800 mb-3">Recorded Audio</h4>
-              <audio
-                controls
-                className="mx-auto"
-                src={recordedAudioUrl}
-              >
-                Your browser does not support the audio element.
-              </audio>
+        <div className="space-y-8">
+          {/* New Recording with Live Visualization */}
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-medium text-gray-800 mb-2">Recording with Live Visualization</h3>
+              <p className="text-sm text-gray-500">Record audio while viewing real-time visualization</p>
             </div>
-          )}
+            
+            <RecordingVisualizer
+              visualizationType={visualizationType}
+              width={800}
+              height={200}
+              barWidth={4}
+              barGap={2}
+              barColor="#3b82f6"
+              backgroundColor="#ffffff"
+              onRecordingComplete={handleRecordingComplete}
+            />
+            
+            {recordedAudioUrl && (
+              <div className="text-center">
+                <h4 className="text-md font-medium text-gray-800 mb-3">Recorded Audio</h4>
+                <audio
+                  controls
+                  className="mx-auto"
+                  src={recordedAudioUrl}
+                >
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            )}
+          </div>
+
+          
         </div>
       )
     },
@@ -134,6 +150,39 @@ export default function AudioLabPage() {
             backgroundColor="#ffffff"
           />
         </div>
+      )
+    },
+    {
+      id: 'old-record',
+      label: 'Old Record',
+      content: (
+        <div className="space-y-8">
+        <div className="text-center mb-6">
+          <h3 className="text-lg font-medium text-gray-800 mb-2">Old Recording Method</h3>
+          <p className="text-sm text-gray-500">Traditional recording with file upload and playback</p>
+        </div>
+        
+        <OldRecording
+          onAudioContextChange={setRecordingTabAudioContext}
+          onAnalyserChange={setRecordingTabAnalyser}
+          onIsPlayingChange={setRecordingTabIsPlaying}
+        />
+        
+        <div className="flex justify-center mt-6">
+          <AudioVisualizer
+            audioContext={recordingTabAudioContext}
+            analyser={recordingTabAnalyser}
+            isPlaying={recordingTabIsPlaying}
+            visualizationType={visualizationType}
+            width={800}
+            height={200}
+            barWidth={4}
+            barGap={2}
+            barColor="#3b82f6"
+            backgroundColor="#ffffff"
+          />
+        </div>
+      </div>
       )
     }
   ];
