@@ -6,6 +6,7 @@ import AudioControls from '../components/AudioControls';
 import AudioVisualizer from '../components/AudioVisualizer';
 import LiveAudioVisualizer from '../components/LiveAudioVisualizer';
 import RecordingVisualizer from '../components/RecordingVisualizer';
+import TextAudioVisualizer from '../components/TextAudioVisualizer';
 
 export default function AudioLabPage() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -110,6 +111,28 @@ export default function AudioLabPage() {
               </audio>
             </div>
           )}
+        </div>
+      )
+    },
+    {
+      id: 'text-audio',
+      label: 'Text Audio',
+      content: (
+        <div className="space-y-6">
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-medium text-gray-800 mb-2">Text-to-Speech Visualization</h3>
+            <p className="text-sm text-gray-500">Convert text to speech with real-time audio visualization</p>
+          </div>
+          
+          <TextAudioVisualizer
+            visualizationType={visualizationType}
+            width={800}
+            height={200}
+            barWidth={4}
+            barGap={2}
+            barColor="#3b82f6"
+            backgroundColor="#ffffff"
+          />
         </div>
       )
     }

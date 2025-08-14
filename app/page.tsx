@@ -32,6 +32,12 @@ export default function Home() {
           >
             Audio Visualization Lab
           </a>
+          <a
+            className="rounded border border-gray-300 transition-colors flex items-center justify-center bg-white text-gray-700 gap-2 hover:bg-gray-50 font-medium text-sm h-10 px-4 sm:w-auto"
+            href="/text-audio"
+          >
+            Text-to-Speech Visualizer
+          </a>
         </div>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
