@@ -95,12 +95,20 @@ const TextAudioVisualizer: React.FC<TextAudioVisualizerProps> = ({
 
   const animate = useCallback(() => {
     if (!analyserRef.current || !canvasRef.current || !isPlaying) {
+      console.log('Animation stopped:', { 
+        hasAnalyser: !!analyserRef.current, 
+        hasCanvas: !!canvasRef.current, 
+        isPlaying 
+      });
       return;
     }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      console.log('No canvas context');
+      return;
+    }
 
     const bufferLength = analyserRef.current.frequencyBinCount;
     const data = new Uint8Array(bufferLength);
@@ -131,6 +139,12 @@ const TextAudioVisualizer: React.FC<TextAudioVisualizerProps> = ({
 
       gainNode.connect(analyser);
       analyser.connect(audioContext.destination);
+      
+      console.log('Text audio context initialized:', {
+        audioContextState: audioContext.state,
+        analyserFftSize: analyser.fftSize,
+        analyserFrequencyBinCount: analyser.frequencyBinCount
+      });
     }
   }, []);
 
@@ -163,25 +177,56 @@ const TextAudioVisualizer: React.FC<TextAudioVisualizerProps> = ({
       const audioContext = audioContextRef.current!;
       const gainNode = gainNodeRef.current!;
 
-      // Create oscillator to simulate audio for visualization
-      // (Note: We can't directly access speech synthesis audio, so we simulate it)
+      // Create a more dynamic audio source for visualization
       const oscillator = audioContext.createOscillator();
       const oscillatorGain = audioContext.createGain();
+      const filter = audioContext.createBiquadFilter();
       
+      // Configure filter for more realistic speech-like audio
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(800, audioContext.currentTime);
+      filter.Q.setValueAtTime(1, audioContext.currentTime);
+      
+      oscillator.type = 'sawtooth';
       oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-      oscillatorGain.gain.setValueAtTime(0.1, audioContext.currentTime);
+      oscillatorGain.gain.setValueAtTime(0.05, audioContext.currentTime);
       
-      oscillator.connect(oscillatorGain);
+      // Connect audio chain
+      oscillator.connect(filter);
+      filter.connect(oscillatorGain);
       oscillatorGain.connect(gainNode);
       
       sourceRef.current = oscillator as any;
+
+      // Create dynamic frequency modulation for more realistic visualization
+      let frequencyModulation: NodeJS.Timeout;
+      let gainModulation: NodeJS.Timeout;
+
+      const startModulation = () => {
+        frequencyModulation = setInterval(() => {
+          const baseFreq = 200 + Math.random() * 400;
+          oscillator.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+          filter.frequency.setValueAtTime(baseFreq * 2, audioContext.currentTime);
+        }, 100);
+
+        gainModulation = setInterval(() => {
+          const gain = 0.02 + Math.random() * 0.08;
+          oscillatorGain.gain.setValueAtTime(gain, audioContext.currentTime);
+        }, 50);
+      };
+
+      const stopModulation = () => {
+        if (frequencyModulation) clearInterval(frequencyModulation);
+        if (gainModulation) clearInterval(gainModulation);
+      };
 
       // Start speech synthesis
       utterance.onstart = () => {
         setIsPlaying(true);
         setIsPaused(false);
         oscillator.start();
-        console.log('Speech started');
+        startModulation();
+        console.log('Speech started with visualization');
       };
 
       utterance.onend = () => {
@@ -189,18 +234,21 @@ const TextAudioVisualizer: React.FC<TextAudioVisualizerProps> = ({
         setIsPaused(false);
         setCurrentTime(0);
         oscillator.stop();
+        stopModulation();
         console.log('Speech ended');
       };
 
       utterance.onpause = () => {
         setIsPaused(true);
         oscillator.stop();
+        stopModulation();
         console.log('Speech paused');
       };
 
       utterance.onresume = () => {
         setIsPaused(false);
         oscillator.start();
+        startModulation();
         console.log('Speech resumed');
       };
 
@@ -209,6 +257,7 @@ const TextAudioVisualizer: React.FC<TextAudioVisualizerProps> = ({
         setIsPlaying(false);
         setIsPaused(false);
         oscillator.stop();
+        stopModulation();
       };
 
       // Start speaking
@@ -251,11 +300,30 @@ const TextAudioVisualizer: React.FC<TextAudioVisualizerProps> = ({
     }
   }, []);
 
+  // Initialize canvas
+  useEffect(() => {
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Clear canvas initially
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, width, height);
+        console.log('Text audio canvas initialized:', { width, height });
+      }
+    }
+  }, [width, height, backgroundColor]);
+
   // Start animation when playing
   useEffect(() => {
+    console.log('Text audio animation effect triggered:', { isPlaying, hasAnalyser: !!analyserRef.current });
+    
     if (isPlaying && analyserRef.current) {
+      console.log('Starting text audio animation');
       animate();
     } else if (animationFrameRef.current) {
+      console.log('Stopping text audio animation');
       cancelAnimationFrame(animationFrameRef.current);
     }
 
