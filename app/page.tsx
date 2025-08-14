@@ -28,9 +28,9 @@ export default function Home() {
         <div className="flex gap-4 items-center flex-col sm:flex-row">
           <a
             className="rounded border border-gray-300 transition-colors flex items-center justify-center bg-white text-gray-700 gap-2 hover:bg-gray-50 font-medium text-sm h-10 px-4 sm:w-auto"
-            href="/audio-visualizer"
+            href="/audio-lab"
           >
-            Audio Visualization
+            Audio Visualization Lab
           </a>
         </div>
       </main>
